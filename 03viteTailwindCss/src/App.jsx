@@ -2,13 +2,20 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
+import Card from './components/Card'
 
 function App() {
   const [count, setCount] = useState(0)
 
+  const myOBJ = {
+    age: 45,
+    isAdult: true
+  }
+
   return (
     <>
-      <h1 className='bg-yellow-400 text-red-600 p-4 rounded-xl border-4 border-red-800'>TailWind CSS</h1>
+    <Card  greeting = "Hello" details = {myOBJ} btnText = "Click To Join"/>
+    <Card greeting = "Great" btnText = "Click here To Join"/>    
     </>
   )
 }
