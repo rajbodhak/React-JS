@@ -1,10 +1,10 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 
 
 function App() {
   const [length, setLength] = useState(8);
   const [numAllowed, setNumAllowed] = useState(false);
-  const [charAllowrd, setCharAllowed] = useState(false);
+  const [charAllowed, setCharAllowed] = useState(false);
   const [password, setPassword] = useState("");
 
   const passwordGenerator = useCallback(() => 
@@ -12,15 +12,19 @@ function App() {
       let pass = " "
       let str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
       if(numAllowed) str += "0123456789"
-      if(charAllowrd) str += "!@#$%^&*(){}[]"
+      if(charAllowed) str += "!@#$%^&*(){}[]"
 
       for (let i = 0; i < length; i++) {
         let char = Math.floor(Math.random() * str.length + 1)
-        pass = str.charAt(char)
+        pass += str.charAt(char)
       }
 
       setPassword(pass)
-    }, [length, numAllowed, charAllowrd, setPassword])
+    }, [length, numAllowed, charAllowed, setPassword])
+
+    useEffect(() => {
+      passwordGenerator()
+    }, [length, numAllowed, charAllowed, passwordGenerator])
 
   return (
     <>
@@ -67,10 +71,10 @@ function App() {
           <div className='flex items-center gap-x-1'>
             <input 
               type="checkbox"
-              defaultChecked = {charAllowrd}
+              defaultChecked = {charAllowed}
               id = 'characterInput'
-              onClick={() =>  {
-                setNumAllowed((prev) => !prev)
+              onChange={() =>  {
+                setCharAllowed((prev) => !prev)
               }}
             />
             <label 
