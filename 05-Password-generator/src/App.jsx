@@ -1,33 +1,85 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useCallback } from 'react'
+
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [length, setLength] = useState(8);
+  const [numAllowed, setNumAllowed] = useState(false);
+  const [charAllowrd, setCharAllowed] = useState(false);
+  const [password, setPassword] = useState("");
+
+  const passwordGenerator = useCallback(() => 
+    {
+      let pass = " "
+      let str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+      if(numAllowed) str += "0123456789"
+      if(charAllowrd) str += "!@#$%^&*(){}[]"
+
+      for (let i = 0; i < length; i++) {
+        let char = Math.floor(Math.random() * str.length + 1)
+        pass = str.charAt(char)
+      }
+
+      setPassword(pass)
+    }, [length, numAllowed, charAllowrd, setPassword])
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      <div className='w-full max-w-2xl mx-auto shadow-md px-4 py-3 my-8 bg-gray-800 rounded-md text-orange-500 '>
+        <h1 className='font-bold text-4xl text-center text-white my-8'>PassWord Generator</h1>
+        <div className='flex shadow rounded-lg overflow-hidden mb-4'>
+          <input 
+           className='outline-none w-full py-3 px-3'
+           type="text"
+           placeholder='password'
+           value={password}
+           readOnly
+           />
+          <button className='bg-blue-600 font-bold px-3 outline-none text-white hover:bg-blue-500 '>Copy</button>
+        </div>
+        <div className='flex text-lg gap-x-3'>
+          <div className='flex items-center gap-x-1'>
+            <input 
+              type="range"
+              value={length}
+              min={8}
+              max={50}
+              className='cursor-pointer'
+
+              onChange={(e) => setLength(e.target.value)}
+            />
+            <label className='font-bold'>Length: {length}</label>
+          </div>
+
+          <div className='flex items-center gap-x-1'>
+            <input 
+              type="checkbox"
+              defaultChecked = {numAllowed}
+              id = 'numberInput'
+              onClick={() =>  {
+                setNumAllowed((prev) => !prev)
+              }}
+            />
+            <label 
+              htmlFor='numberInput'
+              className='font-bold'>Number</label>
+          </div>
+
+          <div className='flex items-center gap-x-1'>
+            <input 
+              type="checkbox"
+              defaultChecked = {charAllowrd}
+              id = 'characterInput'
+              onClick={() =>  {
+                setNumAllowed((prev) => !prev)
+              }}
+            />
+            <label 
+              htmlFor='characterInput'
+              className='font-bold'>Character</label>
+          </div>
+          
+        </div>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
   )
 }
