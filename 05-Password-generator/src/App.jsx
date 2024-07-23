@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 
 
 function App() {
@@ -6,6 +6,13 @@ function App() {
   const [numAllowed, setNumAllowed] = useState(false);
   const [charAllowed, setCharAllowed] = useState(false);
   const [password, setPassword] = useState("");
+
+  const passwordRef = useRef(null);
+
+  const copyPassWord = useCallback(() => {
+    passwordRef.current?.select()
+    window.navigator.clipboard.writeText(password);
+  },[password])
 
   const passwordGenerator = useCallback(() => 
     {
@@ -37,8 +44,11 @@ function App() {
            placeholder='password'
            value={password}
            readOnly
+           ref={passwordRef}
            />
-          <button className='bg-blue-600 font-bold px-3 outline-none text-white hover:bg-blue-500 '>Copy</button>
+          <button
+            onClick={copyPassWord}
+            className='bg-blue-600 font-bold px-3 outline-none text-white hover:bg-blue-500  active:bg-blue-900'>Copy</button>
         </div>
         <div className='flex text-lg gap-x-3'>
           <div className='flex items-center gap-x-1'>
@@ -81,7 +91,6 @@ function App() {
               htmlFor='characterInput'
               className='font-bold'>Character</label>
           </div>
-          
         </div>
       </div>
     </>
