@@ -5,38 +5,34 @@
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+h1{
+  color: blue;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.login-section {
+  display: flex;
+  flex-direction: column;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.login-section h2{
+  font-size: 2rem;
+  color: orange;
 }
 
-.card {
-  padding: 2em;
+input {
+  padding: 15px 5px;
+  margin: 0 0 15px 0
 }
 
-.read-the-docs {
-  color: #888;
+.profile-text {
+  margin-top: 10px;
+  font-size: 1.75rem;
+}
+
+#userName{
+  color: lightgreen;
+}
+
+#warning{
+  color: red;
 }
