@@ -1,12 +1,15 @@
-import { useState } from 'react'
+import React from 'react';
+import Todos from './Components/Todos';
+import AddTodo from './Components/AddTodo';
 
 function App() {
-
   return (
-    <>
-      <h1 className='text-white font-bold text-4xl text-center pt-80'>Learning React Redux</h1>
-    </>
-  )
+    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center p-5">
+      <h1 className="text-4xl font-bold mt-10">Learn about Redux Toolkit</h1>
+      <AddTodo />
+      <Todos />
+    </div>
+  );
 }
 
-export default App
+export default App;
