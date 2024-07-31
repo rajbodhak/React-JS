@@ -1,10 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { removeTodo } from '../features/todo/todoSlice';
+import { removeTodo, updateTodo, toggleComplete } from '../features/todo/todoSlice';
 
 function Todos() {
+  const [editableTodoId, setEditableTodoId] = useState(null);
+  const [editText, setEditText] = useState('');
   const todos = useSelector((state) => state.todos);
   const dispatch = useDispatch();
+
+  const handleEditClick = (todo) => {
+    setEditableTodoId(todo.id);
+    setEditText(todo.text);
+  };
+
+  const handleSaveClick = (todo) => {
+    dispatch(updateTodo({
+      id: todo.id,
+      text: editText,
+    }));
+    setEditableTodoId(null);
+  };
 
   return (
     <div className="w-full max-w-xl mt-10">
@@ -12,10 +27,40 @@ function Todos() {
       <ul className="list-none space-y-4">
         {todos.map((todo) => (
           <li
-            className="flex justify-between items-center bg-gray-800 px-4 py-2 rounded"
+            className={`flex gap-3 items-center px-4 py-2 rounded ${todo.completed ? 'bg-green-800' : 'bg-gray-800'}`}
             key={todo.id}
           >
-            <span className="text-white">{todo.text}</span>
+            <input
+              type="checkbox"
+              className="cursor-pointer"
+              checked={todo.completed}
+              onChange={() => dispatch(toggleComplete({ id: todo.id }))}
+            />
+            {editableTodoId === todo.id ? (
+              <input
+                className="flex-grow text-black px-2 py-1 rounded"
+                value={editText}
+                onChange={(e) => setEditText(e.target.value)}
+              />
+            ) : (
+              <span className={`flex-grow ${todo.completed ? 'line-through text-gray-400' : 'text-white'}`}>{todo.text}</span>
+            )}
+            {editableTodoId === todo.id ? (
+              <button
+                onClick={() => handleSaveClick(todo)}
+                className="text-white bg-green-500 border-0 py-1 px-4 focus:outline-none hover:bg-green-600 rounded"
+              >
+                Save
+              </button>
+            ) : (
+              <button
+                onClick={() => handleEditClick(todo)}
+                className="text-white bg-blue-500 border-0 py-1 px-4 focus:outline-none hover:bg-blue-600 rounded"
+                disabled={todo.completed}
+              >
+                ✏️
+              </button>
+            )}
             <button
               onClick={() => dispatch(removeTodo(todo.id))}
               className="text-white bg-red-500 border-0 py-1 px-4 focus:outline-none hover:bg-red-600 rounded"
