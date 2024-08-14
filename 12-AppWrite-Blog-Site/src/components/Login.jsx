@@ -7,7 +7,7 @@ import authService from "../Appwrite/auth"
 import { login as authLogin } from "../store/authSlice"
 
 
-function login() {
+function Login() {
 
     const dispatch = useDispatch()
     const navigate = useNavigate()
@@ -79,4 +79,4 @@ function login() {
     )
 }
 
-export default login
+export default Login
