@@ -105,11 +105,11 @@ export class Service {
         }
     }
 
-    async deleteFile(fileID) {
+    async deleteFile(fileId) {
         try {
             return await this.bucket.deleteFile(
-                config.appWriteBucketID,
-                fileID
+                fileId,
+                config.appWriteBucketID
             );
         } catch (error) {
             console.log("AppWrite mainConfig :: deleteFile :: Error", error);
@@ -117,21 +117,14 @@ export class Service {
         }
     }
 
-    async getFilePreview(fileID) {
-        if (!fileID) {
-            console.error("File ID is required to get file preview.");
-            return null;
-        }
-        try {
-            return await this.bucket.getFilePreview(
-                config.appWriteBucketID,
-                fileID
-            );
-        } catch (error) {
-            console.error("AppWrite mainConfig :: getFilePreview :: Error", error);
-            return null;
-        }
+    getFilePreview(fileId) {
+        return this.bucket.getFilePreview(
+            config.appWriteBucketID,  
+            fileId
+        );
     }
+    
+    
 }
 
 const service = new Service();
