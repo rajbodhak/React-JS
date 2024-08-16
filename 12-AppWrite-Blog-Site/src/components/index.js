@@ -9,7 +9,7 @@ import Button from "./Button"
 import RTE from "./RTE"
 import Login from "./Login"
 import PostCard from "./PostCard"
-import Singup from "./Singup"
+import Signup from "./Signup"
 import PostForm from "./post-form/PostForm"
 import AuthLayout from "./authLayout"
 
@@ -25,7 +25,7 @@ export {
     RTE,
     PostCard,
     Login,
-    Singup,
+    Signup,
     PostForm,
     AuthLayout
 }

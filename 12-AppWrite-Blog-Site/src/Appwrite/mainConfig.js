@@ -1,7 +1,7 @@
 import config from '../config/config'
-import {Client, ID, Databases, Storage, Query} from 'appwrite'
+import { Client, ID, Databases, Storage, Query } from 'appwrite'
 
-export class Service{
+export class Service {
     client = new Client();
     databases;
     bucket;
@@ -9,12 +9,12 @@ export class Service{
     constructor() {
         this.client
             .setEndpoint(config.appWriteUrl)
-            .setProject(config.appWriteProjectID)
-        this.databases = new Databases(this.client)
-        this.bucket = new Storage(this.client)
+            .setProject(config.appWriteProjectID);
+        this.databases = new Databases(this.client);
+        this.bucket = new Storage(this.client);
     }
 
-    async createPost({title, slug, content, featuredImage, status, userId}) {
+    async createPost({ title, slug, content, featuredImage, status, userId }) {
         try {
             await this.databases.createDocument(
                 config.appWriteDatabaseID,
@@ -25,15 +25,15 @@ export class Service{
                     content,
                     featuredImage,
                     status,
-                    userId
+                    userID: userId // Ensure the attribute matches your database schema
                 }
-            )
+            );
         } catch (error) {
             console.log("AppWrite mainConfig :: createPost :: Error", error);
         }
     }
 
-    async updatePost(slug,{title, content, featuredImage, status}) {
+    async updatePost(slug, { title, content, featuredImage, status }) {
         try {
             await this.databases.updateDocument(
                 config.appWriteDatabaseID,
@@ -45,7 +45,7 @@ export class Service{
                     featuredImage,
                     status
                 }
-            )
+            );
         } catch (error) {
             console.log("AppWrite mainConfig :: updatePost :: Error", error);
         }
@@ -57,11 +57,11 @@ export class Service{
                 config.appWriteDatabaseID,
                 config.appWriteCollectionID,
                 slug
-            )
-            return true
+            );
+            return true;
         } catch (error) {
             console.log("AppWrite mainConfig :: deletePost :: Error", error);
-            return false
+            return false;
         }
     }
 
@@ -71,10 +71,10 @@ export class Service{
                 config.appWriteDatabaseID,
                 config.appWriteCollectionID,
                 slug
-            )
+            );
         } catch (error) {
             console.log("AppWrite mainConfig :: getPost :: Error", error);
-            return false
+            return false;
         }
     }
 
@@ -84,24 +84,24 @@ export class Service{
                 config.appWriteDatabaseID,
                 config.appWriteCollectionID,
                 queries
-            )
+            );
         } catch (error) {
             console.log("AppWrite mainConfig :: getPosts :: Error", error);
-            return false
+            return false;
         }
     }
 
-    //service for bucket upload
+    // Service for bucket upload
     async uploadFile(file) {
         try {
             return await this.bucket.createFile(
                 config.appWriteBucketID,
                 ID.unique(),
                 file
-            )
+            );
         } catch (error) {
             console.log("AppWrite mainConfig :: uploadFile :: Error", error);
-            return false
+            return false;
         }
     }
 
@@ -110,21 +110,30 @@ export class Service{
             return await this.bucket.deleteFile(
                 config.appWriteBucketID,
                 fileID
-            )
+            );
         } catch (error) {
             console.log("AppWrite mainConfig :: deleteFile :: Error", error);
-            return false
+            return false;
         }
     }
 
-    getFilePreview(fileID) {
-        this.bucket.getFilePreview(
-            config.appWriteBucketID,
-            fileID
-        )
+    async getFilePreview(fileID) {
+        if (!fileID) {
+            console.error("File ID is required to get file preview.");
+            return null;
+        }
+        try {
+            return await this.bucket.getFilePreview(
+                config.appWriteBucketID,
+                fileID
+            );
+        } catch (error) {
+            console.error("AppWrite mainConfig :: getFilePreview :: Error", error);
+            return null;
+        }
     }
 }
 
-const service = new Service
+const service = new Service();
 
-export default service
+export default service;

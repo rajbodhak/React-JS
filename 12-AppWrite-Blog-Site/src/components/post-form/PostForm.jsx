@@ -1,75 +1,83 @@
-import React, {useCallback, useEffect} from "react";
+import React, { useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import {Button, RTE, Select, Input} from ".."
-import service from "../../Appwrite/mainConfig"
+import { Button, RTE, Select, Input } from "..";
+import service from "../../Appwrite/mainConfig";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
-export default function PostForm({post}) {
-    
-    const {register, watch, handleSubmit, setValue, control, getValues } = useForm({
+export default function PostForm({ post }) {
+    const { register, watch, handleSubmit, setValue, control, getValues } = useForm({
         defaultValues: {
             title: post?.title || "",
-            slug : post?.slug || "",
+            slug: post?.slug || "",
             content: post?.content || "",
             status: post?.status || ""
         }
-    })
+    });
 
-    const navigate = useNavigate() 
-    const userData = useSelector((state) => state.auth.userData)
+    const navigate = useNavigate();
+    const userData = useSelector((state) => state.auth.userData);
 
-    const submit = async(data) => {
-        if(post) {
-            const file = data.image[0] ? service.uploadFile(data.image[0]) : null;
-            if(file) {
-                service.deleteFile(post.featuredImage)
-            }
+    const submit = async (data) => {
+        try {
+            if (post) {
+                // Upload new image if a new one is selected
+                let file;
+                if (data.image[0]) {
+                    file = await service.uploadFile(data.image[0]);
+                    if (file) {
+                        await service.deleteFile(post.featuredImage);
+                    }
+                }
 
-            const dbPost = await service.updatePost(post.$id ,{
-                ...data,
-                featuredImage: file ? file.$id : undefined
-            });
+                const updatedPost = await service.updatePost(post.$id, {
+                    ...data,
+                    featuredImage: file ? file.$id : post.featuredImage // Preserve old image if no new one
+                });
 
-            if(dbPost) {
-                navigate(`/post/${dbPost.$id}`)
-            }
-        } else {
-            const file = await service.uploadFile(data.image[0]);
+                if (updatedPost) {
+                    navigate(`/post/${updatedPost.$id}`);
+                }
+            } else {
+                // Handle creating new post
+                const file = data.image[0] ? await service.uploadFile(data.image[0]) : null;
+                const fileId = file ? file.$id : undefined;
 
-            if(file) {
-                const fileld = file.$id;
-                data.featuredImage = fileld;
-                const dbPost = await service.createPost({...data, userId: userData.$id })
+                const createdPost = await service.createPost({
+                    ...data,
+                    userId: userData.$id,
+                    featuredImage: fileId
+                });
 
-                if(dbPost) {
-                    navigate(`/post/${dbPost.$id}`)
+                if (createdPost) {
+                    navigate(`/post/${createdPost.$id}`);
                 }
             }
+        } catch (error) {
+            console.error("Error during form submission", error);
         }
     };
 
     const slugTransform = useCallback((value) => {
-        if(value && typeof value === 'string')
+        if (value && typeof value === 'string') {
             return value
                 .trim()
                 .toLowerCase()
                 .replace(/[^a-zA-Z\d\s]+/g, "-")
-                .replace(/[\s]/g, "-")
-        return ""
-    }, [])
+                .replace(/\s+/g, "-");
+        }
+        return "";
+    }, []);
 
     useEffect(() => {
-        const subscription = watch((value, {name}) => {
-            if(name === "title") {
-                setValue("slug", slugTransform(value.title, {shouldValidate: true}))
+        const subscription = watch((value, { name }) => {
+            if (name === "title") {
+                setValue("slug", slugTransform(value.title), { shouldValidate: true });
             }
-        })
+        });
 
-        return () => {
-            subscription.unsubscribe()
-        }
-    }, [watch, slugTransform, setValue])
+        return () => subscription.unsubscribe();
+    }, [watch, slugTransform, setValue]);
 
     return (
         <form onSubmit={handleSubmit(submit)} className="flex flex-wrap">
@@ -97,9 +105,9 @@ export default function PostForm({post}) {
                     type="file"
                     className="mb-4"
                     accept="image/png, image/jpg, image/jpeg, image/gif"
-                    {...register("image", { required: !post })}
+                    {...register("image")}
                 />
-                {post && (
+                {post && post.featuredImage && (
                     <div className="w-full mb-4">
                         <img
                             src={service.getFilePreview(post.featuredImage)}

@@ -11,7 +11,7 @@ function Login() {
 
     const dispatch = useDispatch()
     const navigate = useNavigate()
-    const [register, handleSubmit] = useForm()
+    const {register, handleSubmit} = useForm()
     const [error, setError] = useState("")
 
     const login = async(data) => {
@@ -19,7 +19,7 @@ function Login() {
         try {
             const session = await authService.login(data)
             if (session) {
-                const userData = await authService.getCurrentUser()
+                const userData = await authService.getUserAccount()
                 if(userData) dispatch(authLogin(userData));
                 navigate("/")
             }
@@ -41,10 +41,10 @@ function Login() {
                 <p className="mt-2 text-center text-base text-black/60">
                     Don&apos;t have any account?&nbsp; {/* <- HTML entities */}
                     <Link 
-                        to="/singup"
+                        to="/signup"
                         className="font-medium text-primary transition-all duration-200 hover:underline"
                     >
-                        Sing up
+                        Sign up
                     </Link>
                 </p>
                 {error && <p className="text-red-600 mt-8 text-center"> {error} </p>}
@@ -71,7 +71,8 @@ function Login() {
 
                             })}
                         />
-                        <button type="submit" className="w-full">Sing in</button>
+                        <Button type="submit" className="w-full">Sign in</Button>
+
                     </div>
                 </form>
             </div>
