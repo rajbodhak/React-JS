@@ -24,7 +24,8 @@ function Login() {
                 navigate("/")
             }
         } catch (error) {
-            setError(error.message)
+            console.error("Login error:", error.message);
+            setError(error.message || "Invalid email or password. Please check your credentials and try again.")
         }
     }
 
@@ -72,7 +73,7 @@ function Login() {
                             })}
                         />
                         <Button type="submit" className="w-full">Sign in</Button>
-
+                        
                     </div>
                 </form>
             </div>

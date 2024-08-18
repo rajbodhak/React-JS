@@ -7,30 +7,50 @@ import { useSelector } from "react-redux";
 
 export default function Post() {
     const [post, setPost] = useState(null);
+    const [loading, setLoading] = useState(true);
     const { slug } = useParams();
     const navigate = useNavigate();
 
     const userData = useSelector((state) => state.auth.userData);
-
     const isAuthor = post && userData ? post.userId === userData.$id : false;
 
     useEffect(() => {
-        if (slug) {
-            service.getPost(slug).then((post) => {
-                if (post) setPost(post);
-                else navigate("/");
-            });
-        } else navigate("/");
-    }, [slug, navigate]);
-
-    const deletePost = () => {
-        service.deletePost(post.$id).then((status) => {
-            if (status) {
-                service.deleteFile(post.featuredImage);
+        const fetchPost = async () => {
+            if (slug) {
+                try {
+                    const fetchedPost = await service.getPost(slug);
+                    if (fetchedPost) {
+                        setPost(fetchedPost);
+                    } else {
+                        navigate("/");
+                    }
+                } catch (error) {
+                    console.error("Error fetching post:", error);
+                    navigate("/");
+                } finally {
+                    setLoading(false);
+                }
+            } else {
                 navigate("/");
             }
-        });
+        };
+
+        fetchPost();
+    }, [slug, navigate]);
+
+    const deletePost = async () => {
+        try {
+            const status = await service.deletePost(post.$id);
+            if (status) {
+                await service.deleteFile(post.featuredImage);
+                navigate("/");
+            }
+        } catch (error) {
+            console.error("Error deleting post:", error);
+        }
     };
+
+    if (loading) return <div>Loading...</div>;
 
     return post ? (
         <div className="py-8">
@@ -56,11 +76,11 @@ export default function Post() {
                     )}
                 </div>
                 <div className="w-full mb-6">
-                    <h1 className="text-2xl font-bold">{post.title}</h1>
+                    <h1 className="text-2xl font-bold text-center">{post.title}</h1>
                 </div>
-                <div className="browser-css">
-                    {parse(post.content)}
-                    </div>
+                <div className="text-2xl text-center">
+                    {post.content ? parse(post.content) : "No content available"}
+                </div>
             </Container>
         </div>
     ) : null;

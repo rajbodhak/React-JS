@@ -11,50 +11,41 @@ export default function PostForm({ post }) {
             title: post?.title || "",
             slug: post?.slug || "",
             content: post?.content || "",
-            status: post?.status || ""
-        }
+            status: post?.status || "active",
+        },
     });
 
     const navigate = useNavigate();
     const userData = useSelector((state) => state.auth.userData);
 
     const submit = async (data) => {
-        try {
-            if (post) {
-                // Upload new image if a new one is selected
-                let file;
-                if (data.image[0]) {
-                    file = await service.uploadFile(data.image[0]);
-                    if (file) {
-                        await service.deleteFile(post.featuredImage);
-                    }
-                }
+        if (post) {
+            const file = data.image[0] ? await service.uploadFile(data.image[0]) : null;
 
-                const updatedPost = await service.updatePost(post.$id, {
-                    ...data,
-                    featuredImage: file ? file.$id : post.featuredImage // Preserve old image if no new one
-                });
+            if (file) {
+                service.deleteFile(post.featuredImage);
+            }
 
-                if (updatedPost) {
-                    navigate(`/post/${updatedPost.$id}`);
-                }
-            } else {
-                // Handle creating new post
-                const file = data.image[0] ? await service.uploadFile(data.image[0]) : null;
-                const fileId = file ? file.$id : undefined;
+            const dbPost = await service.updatePost(post.$id, {
+                ...data,
+                featuredImage: file ? file.$id : undefined,
+            });
 
-                const createdPost = await service.createPost({
-                    ...data,
-                    userId: userData.$id,
-                    featuredImage: fileId
-                });
+            if (dbPost) {
+                navigate(`/post/${dbPost.$id}`);
+            }
+        } else {
+            const file = await service.uploadFile(data.image[0]);
 
-                if (createdPost) {
-                    navigate(`/post/${createdPost.$id}`);
+            if (file) {
+                const fileId = file.$id;
+                data.featuredImage = fileId;
+                const dbPost = await service.createPost({ ...data, userId: userData.$id });
+
+                if (dbPost) {
+                    navigate(`/post/${dbPost.$id}`);
                 }
             }
-        } catch (error) {
-            console.error("Error during form submission", error);
         }
     };
 
@@ -105,7 +96,7 @@ export default function PostForm({ post }) {
                     type="file"
                     className="mb-4"
                     accept="image/png, image/jpg, image/jpeg, image/gif"
-                    {...register("image")}
+                    {...register("image", { required: !post })}
                 />
                 {post && post.featuredImage && (
                     <div className="w-full mb-4">

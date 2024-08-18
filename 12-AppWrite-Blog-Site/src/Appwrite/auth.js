@@ -28,22 +28,35 @@ export class AuthService {
     }
 
     async login({email, password}) {
-        try {
-            return await this.account.createEmailPasswordSession(email, password)
-        } catch (error) {
-            console.log("Appwrite auth :: login :: Error", error);
-        }
+    try {
+        const session = await this.account.createEmailPasswordSession(email, password);
+        console.log('Session created:', session);
+        return session;
+    } catch (error) {
+        console.log("Appwrite auth :: login :: Error", error);
+        throw error; // Re-throw to handle elsewhere if needed
     }
+}
+
 
     async getUserAccount() {
         try {
-            return await this.account.get();
+            const session = await this.account.getSession('current');
+            if (session) {
+                return await this.account.get();
+            } else {
+                throw new Error('No active session found');
+            }
         } catch (error) {
             console.log("Appwrite auth :: getUserAccount :: Error", error);
+            if (error.code === 401) {
+                console.log('Unauthorized: Please log in again.');
+            }
         }
-
+    
         return null;
     }
+    
 
     async logout() {
         try {
