@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useParams } from 'react-router';
 import client, { databases, DATABASE_ID, MESSAGES_COLLECTION_ID } from '../services/appwriteConfig';
 import { ID, Query, Permission, Role } from 'appwrite';
 import Header from '../components/Header';
@@ -10,32 +11,30 @@ const ChatRoom = () => {
   const [messages, setMessages] = useState([]);
   const { user } = useAuth();
   const messagesEndRef = useRef(null);
+  const { roomId } = useParams();
 
   useEffect(() => {
     const unsubscribe = client.subscribe(
       `databases.${DATABASE_ID}.collections.${MESSAGES_COLLECTION_ID}.documents`,
       response => {
         if (response.events.includes("databases.*.collections.*.documents.*.create")) {
-          console.log("A MESSAGE WAS CREATED");
-          setMessages(prevState => [...prevState, response.payload]); // Append new message to end
+          setMessages(prevState => [...prevState, response.payload]);
         }
 
         if (response.events.includes("databases.*.collections.*.documents.*.delete")) {
-          console.log("A MESSAGE WAS DELETED!!!");
           setMessages(prevState => prevState.filter(message => message.$id !== response.payload.$id));
         }
       }
     );
 
-    getMessages(); // Fetch initial messages when component loads
+    getMessages();
 
     return () => {
-      unsubscribe(); // Add parentheses to actually invoke the unsubscribe function
+      unsubscribe();
     };
-  }, []);
+  }, [roomId]);
 
   useEffect(() => {
-    // Scroll to bottom when messages change
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
@@ -45,11 +44,11 @@ const ChatRoom = () => {
         DATABASE_ID,
         MESSAGES_COLLECTION_ID,
         [
-          Query.orderAsc('$createdAt'), // Ensure messages are ordered so that the most recent appears last
+          Query.equal('roomId', roomId),
+          Query.orderAsc('$createdAt'),
           Query.limit(100),
         ]
       );
-      console.log(response.documents);
       setMessages(response.documents);
     } catch (error) {
       console.error("Failed to fetch messages:", error);
@@ -58,7 +57,6 @@ const ChatRoom = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("MESSAGE: ", messageBody);
 
     if (!user || !user.$id) {
       alert("User not authenticated!");
@@ -70,21 +68,20 @@ const ChatRoom = () => {
     ];
 
     const payload = {
+      roomId, // Include roomId in the payload
       user_id: user.$id,
       username: user.name,
       body: messageBody,
     };
 
     try {
-      const response = await databases.createDocument(
+      await databases.createDocument(
         DATABASE_ID,
         MESSAGES_COLLECTION_ID,
         ID.unique(),
         payload,
         permissions
       );
-      console.log("RESPONSE: ", response);
-
       setMessageBody("");
     } catch (error) {
       console.error("Failed to send message:", error);
@@ -105,12 +102,11 @@ const ChatRoom = () => {
     <main className="container mx-auto max-w-lg p-5 flex flex-col h-screen">
       <Header />
       <div className="flex-1 flex flex-col">
-        <div className="flex-1 p-8 bg-[rgba(27,27,39,1)] rounded-b-lg border border-[rgba(40,41,57,1)] max-h-[80vh] overflow-y-auto flex flex-col-reverse">
+        <div className="flex-1 p-8 bg-[rgba(27,27,39,1)] rounded-b-lg border border-[rgba(40,41,57,1)] overflow-y-auto flex flex-col-reverse">
           {/* Messages Display */}
           <div className="space-y-4">
             {messages.map((message) => (
               <div key={message.$id} className="message--wrapper flex flex-col gap-2 text-white">
-                
                 <div className="flex justify-between items-center">
                   <p className="text-white">
                     {message?.username ? <span>{message?.username}</span> : 'Anonymous user'}
