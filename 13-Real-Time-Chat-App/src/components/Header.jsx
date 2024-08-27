@@ -1,7 +1,7 @@
 import React from "react";
 import { useAuth } from "../services/AuthContext";
 import { Link } from "react-router-dom";
-import {Logout, LogIn} from "react-feather"
+import {LogOut, LogIn} from "react-feather"
 
 const Header = () => {
     const {user, handleLogout} = useAuth()

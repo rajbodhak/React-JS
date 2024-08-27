@@ -16,7 +16,7 @@ const RegisterPage = () => {
 
     return (
         <div className="flex items-center justify-center h-screen">
-          <div className="w-600 p-8 bg-[rgba(27,27,39,1)] rounded-lg">
+          <div className="w-[600px] p-8 bg-[rgba(27,27,39,1)] rounded-lg">
             <form onSubmit={(e) => handleRegister(e, credentials)}>
               <div className="flex flex-col gap-4 py-2">
                 <label className="text-white">Name:</label>

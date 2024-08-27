@@ -1,11 +1,11 @@
-import {createContext, useEffect, useState, useContext} from "react";
-import {account} from "./appwriteConfig";
-import {useNavigate} from "react-router";
-import {ID} from "appwrite";
+import { createContext, useEffect, useState, useContext } from "react";
+import { account } from "./appwriteConfig";
+import { useNavigate } from "react-router";
+import { ID } from "appwrite";
 
 const AuthContext = createContext();
 
-export const AuthProvider = ({ childern }) => {
+export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
@@ -14,36 +14,50 @@ export const AuthProvider = ({ childern }) => {
         getUserOnLoad();
     }, []);
 
-    const getUserOnLoad  = async () => {
+    const getUserOnLoad = async () => {
         try {
             let accountDetails = await account.get();
-            setUser(accountDetails)
+            setUser(accountDetails);
         } catch (error) {
-            console.error(error)
+            console.error("Failed to retrieve user details:", error);
+            if (error.code === 401) {
+                navigate("/login");
+            }
+        } finally {
             setLoading(false);
         }
     };
 
-    const handleUserLogin = async(e, credentials) => {
+    const handleUserLogin = async (e, credentials) => {
         e.preventDefault();
         console.log("CREDS: ", credentials);
-
+    
         try {
-            let responce = await account.createEmailPasswordSession(
+            // Attempt to create a session with the provided credentials
+            await account.createEmailPasswordSession(
                 credentials.email,
                 credentials.password
             );
-
+    
+            // If successful, fetch user details
             let accountDetails = await account.get();
             setUser(accountDetails);
             navigate("/");
         } catch (error) {
-            console.error(error);
+            // Handle specific errors
+            if (error.code === 401) {
+                console.error("Invalid credentials. Please check the email and password.");
+                alert("Invalid credentials. Please check the email and password.");
+            } else {
+                console.error("An error occurred during login:", error);
+                alert("An error occurred during login. Please try again.");
+            }
         }
     };
+    
 
     const handleLogout = async () => {
-        const responce = await account.deleteSession("current");
+        const response = await account.deleteSession("current");
         setUser(null);
     };
 
@@ -51,19 +65,19 @@ export const AuthProvider = ({ childern }) => {
         e.preventDefault();
         console.log("Handle Register triggered!", credentials);
 
-        if(credentials.password1 !== credentials.password2) {
+        if (credentials.password1 !== credentials.password2) {
             alert("Password did not match!");
             return;
         }
 
         try {
-            let responce = account.create(
+            let response = await account.create(
                 ID.unique(),
                 credentials.email,
-                credentials.password,
-                credentials.name    
+                credentials.password1,
+                credentials.name
             );
-            console.log("User registered!", responce);
+            console.log("User registered!", response);
 
             await account.createEmailPasswordSession(
                 credentials.email,
@@ -72,7 +86,7 @@ export const AuthProvider = ({ childern }) => {
 
             let accountDetails = await account.get();
             setUser(accountDetails);
-            navigate("/")
+            navigate("/");
         } catch (error) {
             console.error(error);
         }
@@ -86,10 +100,10 @@ export const AuthProvider = ({ childern }) => {
     };
 
     return (
-        <AuthProvider.Provider value = {contextData}>
-            {loading ? <p>Loding...</p> : childern }
-        </AuthProvider.Provider>
-    )
+        <AuthContext.Provider value={contextData}>
+            {loading ? <p className="text-white text-2xl p-4 text-center">Loading...</p> : children}
+        </AuthContext.Provider>
+    );
 };
 
 export const useAuth = () => {
