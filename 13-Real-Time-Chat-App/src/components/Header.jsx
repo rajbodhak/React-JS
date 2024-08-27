@@ -1,19 +1,15 @@
 import React from "react";
 import { useAuth } from "../services/AuthContext";
 import { Link } from "react-router-dom";
-import { LogOut, LogIn, List } from "react-feather";
+import { List, LogIn } from "react-feather";
 
 const Header = () => {
-    const { user, handleLogout } = useAuth();
+    const { user } = useAuth();
 
     return (
         <div className="bg-[rgba(20,20,31,1)] p-4 flex justify-between rounded-t-lg border border-[rgba(40,41,57,1)] border-b-0">
             <div className="flex items-center gap-4">
-                {user && (
-                    <Link to="/">
-                        <List className="text-[#c7d8eb] cursor-pointer transition duration-300 hover:text-[#8db3dd]" />
-                    </Link>
-                )}
+                
                 {user ? (
                     <span className="text-white">
                         Welcome <span className="text-[rgba(219,26,90,1)] font-bold">{user.name}</span>
@@ -24,8 +20,11 @@ const Header = () => {
                     </Link>
                 )}
             </div>
+
             {user && (
-                <LogOut className="text-[#c7d8eb] cursor-pointer transition duration-300 hover:text-[#8db3dd]" onClick={handleLogout} />
+              <Link to="/">
+                <List className="text-[#c7d8eb] cursor-pointer transition duration-300 hover:text-[#8db3dd]"/>
+              </Link>  
             )}
         </div>
     );
