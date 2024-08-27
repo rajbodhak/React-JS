@@ -11,84 +11,64 @@ export const AuthProvider = ({ children }) => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        getUserOnLoad();
-    }, []);
-
-    const getUserOnLoad = async () => {
-        try {
-            let accountDetails = await account.get();
-            setUser(accountDetails);
-        } catch (error) {
-            console.error("Failed to retrieve user details:", error);
-            if (error.code === 401) {
-                navigate("/login");
+        const fetchUser = async () => {
+            try {
+                let accountDetails = await account.get();
+                setUser(accountDetails);
+            } catch (error) {
+                console.error("Failed to retrieve user details:", error);
+                if (error.code === 401) {
+                    // Redirect to login if unauthorized
+                    navigate("/login");
+                }
+            } finally {
+                setLoading(false);
             }
-        } finally {
-            setLoading(false);
-        }
-    };
+        };
+
+        fetchUser();
+    }, [navigate]);
 
     const handleUserLogin = async (e, credentials) => {
         e.preventDefault();
-        console.log("CREDS: ", credentials);
-    
         try {
-            // Attempt to create a session with the provided credentials
-            await account.createEmailPasswordSession(
-                credentials.email,
-                credentials.password
-            );
-    
-            // If successful, fetch user details
+            await account.createEmailPasswordSession(credentials.email, credentials.password);
             let accountDetails = await account.get();
             setUser(accountDetails);
             navigate("/");
         } catch (error) {
-            // Handle specific errors
-            if (error.code === 401) {
-                console.error("Invalid credentials. Please check the email and password.");
-                alert("Invalid credentials. Please check the email and password.");
-            } else {
-                console.error("An error occurred during login:", error);
-                alert("An error occurred during login. Please try again.");
-            }
+            console.error("An error occurred during login:", error);
+            alert(error.message || "An error occurred during login. Please try again.");
         }
     };
-    
 
     const handleLogout = async () => {
-        const response = await account.deleteSession("current");
-        setUser(null);
+        try {
+            await account.deleteSession("current");
+            setUser(null);
+            navigate("/login");
+        } catch (error) {
+            console.error("An error occurred during logout:", error);
+            alert(error.message || "An error occurred during logout. Please try again.");
+        }
     };
 
     const handleRegister = async (e, credentials) => {
         e.preventDefault();
-        console.log("Handle Register triggered!", credentials);
-
         if (credentials.password1 !== credentials.password2) {
-            alert("Password did not match!");
+            alert("Passwords do not match!");
             return;
         }
 
         try {
-            let response = await account.create(
-                ID.unique(),
-                credentials.email,
-                credentials.password1,
-                credentials.name
-            );
-            console.log("User registered!", response);
-
-            await account.createEmailPasswordSession(
-                credentials.email,
-                credentials.password1
-            );
-
+            await account.create(ID.unique(), credentials.email, credentials.password1, credentials.name);
+            await account.createEmailPasswordSession(credentials.email, credentials.password1);
             let accountDetails = await account.get();
             setUser(accountDetails);
             navigate("/");
         } catch (error) {
-            console.error(error);
+            console.error("An error occurred during registration:", error);
+            alert(error.message || "An error occurred during registration. Please try again.");
         }
     };
 
